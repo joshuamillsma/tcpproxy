@@ -12,3 +12,45 @@ apply plugin: 'idea'
 group = 'com.joshmills'
 
 description = """Java NIO based TCP Proxy"""
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'args4j:args4j:2.33'
+    compile 'org.slf4j:slf4j-api:1.7.30'
+
+    // write to console for now
+    runtime 'org.slf4j:slf4j-simple:1.7.30'
+}
+
+task launch(type: JavaExec) {
+    if (project.hasProperty('args')) {
+        args(project.args.split(' '))
+    }
+
+    if (project.hasProperty('debug')) {
+        debugOptions {
+            enabled = true
+            port = 18443
+            server = true
+            suspend = project.hasProperty('suspend')
+        }
+    }
+
+    if (project.hasProperty('verboseLog')) {
+        systemProperties 'org.slf4j.simpleLogger.defaultLogLevel':'DEBUG'
+    }
+
+    int javaMajor = JavaVersion.current().getMajorVersion().toInteger()
+    if (javaMajor <= 8) {
+        // CMS tends to beat G1 prior to java 11
+        // CMS has better pause times than the default ParallelGC collector
+        jvmArgs '-XX:+UseConcMarkSweepGC'
+    }
+    description = "Launch TcpProxy"
+    main = "com.joshmills.TcpProxy"
+    classpath = sourceSets.main.runtimeClasspath
+}
