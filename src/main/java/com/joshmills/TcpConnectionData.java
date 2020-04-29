@@ -108,7 +108,8 @@ import org.slf4j.LoggerFactory;
     
     private void closeChannel()
     {
-        if (m_key.channel().isOpen() && m_toSend.size() > 0)
+        final SocketChannel channel = (SocketChannel)m_key.channel();
+        if (channel.isConnected() && m_toSend.size() > 0)
         {
             // drain the rest of the data first
             m_closeAfterWrite = true;
@@ -116,7 +117,7 @@ import org.slf4j.LoggerFactory;
         else
         {
             m_key.cancel();
-            closeQuietly(m_key.channel());
+            closeQuietly(channel);
         }
     }
 
