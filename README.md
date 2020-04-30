@@ -16,7 +16,7 @@ To run the proxy with default values:
 | `-l <listenport>` | Local port for incoming connections | 8443 |
 | `-s <millis>` | Select loop timeout in ms | 25 |
 | `-c <millis>` | Connect timeout in ms | 500 |
-| `-b <bytes>` | Bytes to read at a time | 8192 |
+| `-b <bytes>` | Bytes to read at a time | 16384 |
 
 ## Gradle properties
 

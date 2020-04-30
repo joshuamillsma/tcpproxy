@@ -50,7 +50,7 @@ public class TcpProxy
     private int m_connectTimeout = 500;
 
     @Option(name = "-b", usage = "Bytes to read", hidden = true)
-    private int m_bufferSize = 8192;
+    private int m_bufferSize = 16384;
     
     /**
      * Track timeouts for backend connections that haven't finished connecting
@@ -157,6 +157,8 @@ public class TcpProxy
         
         // TODO: maybe we should keep around a pool of these, though modern garbage
         // collection does a pretty good job of handling short lived objects.
+        // With the GC settings in build.gradle, pauses are about 1 to 1.5ms every 500ms to 1000ms
+        // when under a lot of load.
         final ByteBuffer buff = ByteBuffer.allocate(m_bufferSize);
 
         try
@@ -171,7 +173,15 @@ public class TcpProxy
             else 
             {
                 m_logger.debug("Read " + read + " bytes");
-                data.queueSendToOtherSocket((ByteBuffer)buff.flip());
+
+                // keep GC under control
+                // turn off read notifications until we clear out the send queue a bit so that
+                // we don't queue up GB of data if the other connection is slow
+                int backlog = data.queueSendToOtherSocket((ByteBuffer)buff.flip());
+                if (backlog > 10)
+                {
+                    data.interestOpsClear(SelectionKey.OP_READ);
+                }
             }
         }
         catch (IOException ex)

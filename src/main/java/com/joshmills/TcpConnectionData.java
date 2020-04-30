@@ -35,12 +35,13 @@ import org.slf4j.LoggerFactory;
         key.attach(this);
     }
     
-    public void queueSendToOtherSocket(final ByteBuffer bb)
+    public int queueSendToOtherSocket(final ByteBuffer bb)
     {
         m_otherData.m_toSend.add(bb);
-
+        
         // flip the bit so that we get notified when we can write
-        m_otherData.m_key.interestOps(m_otherData.m_key.interestOps() | SelectionKey.OP_WRITE);
+        m_otherData.interestOpsSet(SelectionKey.OP_WRITE);
+        return m_otherData.m_toSend.size();
     }
     
     public long getConnectionDeadline()
@@ -59,6 +60,22 @@ import org.slf4j.LoggerFactory;
     public void setBackend(TcpConnectionData otherData)
     {
         m_otherData = otherData;
+    }
+    
+    public void interestOpsSet(int ops)
+    {
+        if (m_key.isValid())
+        {
+            m_key.interestOps(m_key.interestOps() | ops);
+        }
+    }
+
+    public void interestOpsClear(int ops)
+    {
+        if (m_key.isValid())
+        {
+            m_key.interestOps(m_key.interestOps() & ~ops);
+        }
     }
     
     public void sendQueuedData()
@@ -81,7 +98,10 @@ import org.slf4j.LoggerFactory;
             }
             
             // cleaned out the queue, no need for write notify anymore
-            m_key.interestOps(m_key.interestOps() & ~SelectionKey.OP_WRITE);
+            interestOpsClear(SelectionKey.OP_WRITE);
+            
+            // make sure the other side is still interested in reads
+            m_otherData.interestOpsSet(SelectionKey.OP_READ);
             
             if (m_closeAfterWrite)
             {
@@ -93,6 +113,10 @@ import org.slf4j.LoggerFactory;
         {
             // connection probably closed out from under us
             m_logger.debug("Failed to write: ", ex);
+
+            // not sure why channel is still marked as connected when we have a broken pipe
+            // clear out send queue, since it is never going to succeed
+            m_toSend.clear();
             closeBothChannels();
         }
     }

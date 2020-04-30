@@ -44,11 +44,23 @@ task launch(type: JavaExec) {
         systemProperties 'org.slf4j.simpleLogger.defaultLogLevel':'DEBUG'
     }
 
+    jvmArgs '-Xms800m'
+    jvmArgs '-Xmx800m'
+    jvmArgs '-XX:SurvivorRatio=8'
+    jvmArgs '-XX:MaxTenuringThreshold=4'
+    jvmArgs '-XX:MaxNewSize=500m'
+    jvmArgs '-XX:NewSize=500m'
     int javaMajor = JavaVersion.current().getMajorVersion().toInteger()
     if (javaMajor <= 8) {
         // CMS tends to beat G1 prior to java 11
         // CMS has better pause times than the default ParallelGC collector
+        jvmArgs '-Xloggc:gc.log'
+        jvmArgs '-XX:+PrintGCDetails'
         jvmArgs '-XX:+UseConcMarkSweepGC'
+    } else {
+        jvmArgs '-Xlog:gc=info,gc+start=info,gc+age=trace,gc+heap=info:file=gc.log:time,uptime,tags'
+        jvmArgs '-XX:-G1UseAdaptiveIHOP'
+        jvmArgs '-XX:InitiatingHeapOccupancyPercent=85'
     }
     description = "Launch TcpProxy"
     main = "com.joshmills.TcpProxy"
