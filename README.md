@@ -52,5 +52,5 @@ I used the `siege` package to test the overhead and correctness of the proxy.  T
 * You need to pass in a host header when testing with curl.
 * This code cannot do connection pooling to the target hostname, because it does not do any protocol parsing.
 * This code could use some more load testing.  The code is single threaded since that is all that should be necessary with non-blocking sockets and epoll.
-* Different buffer sizes gave slightly different results.  The highest throughput I saw about about 750Mbps with a 16K buffer.  More testing would uncover the optimal size.
+* Different buffer sizes gave slightly different results.  The highest throughput I saw about about 8 Gbps with a 16K buffer.  More testing would uncover the optimal size.
 * Java garbage collection does not seem to be much of a problem, but I would turn on logging and optimize it, given more time.
