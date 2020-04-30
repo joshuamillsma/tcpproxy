@@ -259,7 +259,18 @@ public class TcpProxy
             {
                 throw new CmdLineException("Invalid destination port");
             }
-
+            if (proxy.m_selectInterval <= 0 || proxy.m_selectInterval > 1000)
+            {
+                throw new CmdLineException("Invalid select interval, must be between 1 and 1000");
+            }
+            if (proxy.m_connectTimeout <= 10)
+            {
+                throw new CmdLineException("Invalid connect timeout");
+            }
+            if (proxy.m_bufferSize <= 0)
+            {
+                throw new CmdLineException("Invalid buffer size");
+            }
             try
             {
                 InetAddress.getByName(proxy.m_destination);
