@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
         m_otherData.m_toSend.add(bb);
 
         // flip the bit so that we get notified when we can write
-        m_otherData.m_key.interestOpsOr(SelectionKey.OP_WRITE);
+        m_otherData.m_key.interestOps(m_otherData.m_key.interestOps() | SelectionKey.OP_WRITE);
     }
     
     public long getConnectionDeadline()
@@ -81,7 +81,7 @@ import org.slf4j.LoggerFactory;
             }
             
             // cleaned out the queue, no need for write notify anymore
-            m_key.interestOpsAnd(~SelectionKey.OP_WRITE);
+            m_key.interestOps(m_key.interestOps() & ~SelectionKey.OP_WRITE);
             
             if (m_closeAfterWrite)
             {

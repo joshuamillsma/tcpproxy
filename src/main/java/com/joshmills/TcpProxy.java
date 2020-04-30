@@ -138,7 +138,7 @@ public class TcpProxy
             m_logger.debug("Connected to " + m_destination + ":" + m_destinationPort);
             
             // no longer interest in connect
-            key.interestOpsAnd(~SelectionKey.OP_CONNECT);
+            key.interestOps(key.interestOps() & ~SelectionKey.OP_CONNECT);
             
             // no need to track timeout anymore
             m_connecting.remove(key.attachment());
@@ -171,7 +171,7 @@ public class TcpProxy
             else 
             {
                 m_logger.debug("Read " + read + " bytes");
-                data.queueSendToOtherSocket(buff.flip());
+                data.queueSendToOtherSocket((ByteBuffer)buff.flip());
             }
         }
         catch (IOException ex)
